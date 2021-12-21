@@ -8,8 +8,8 @@ Created on Sat Dec 11 11:55:55 2021
 import tinydb as tdb
 
 #%%
-class leagueDB:
-    """ leagueDB is a object which interacts with a NoSQL database TinyDB.
+class LeagueDB:
+    """ LeagueDB is a object which interacts with a NoSQL database TinyDB.
 
 
          Parameters
@@ -33,7 +33,7 @@ class leagueDB:
         # database name -- this could include a path
 
         if dbName is None:
-            dbName = "loldb"
+            dbName = "./db/loldb"
 
         # database files
         self.db_name = "{}.json".format(dbName)

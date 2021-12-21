@@ -6,7 +6,7 @@ Created on Sun Dec 12 10:05:10 2021
 """
 
 import pandas as pd
-from lolAnalysis import LeagueAnalysis
+from LeagueAnalysis import LeagueAnalysis
 
 import matplotlib.pyplot as plt
 from pprint import pprint
@@ -47,4 +47,4 @@ champ_dict = lolA.parse_champion_timeline_dataframe(match_id="EUW1_5612017679")
 b = tsData[(tsData["championName"] == "Twitch")].copy()
 b["time"] = b["timestamp"] / 1_000 / 60
 
-plt.plot(b["time"], b["totalGold"])
+# plt.plot(b["time"], b["totalGold"])

@@ -7,12 +7,12 @@ Created on Tue Dec 14 10:15:32 2021
 
 import requests
 import pandas as pd
-from leagueDB import leagueDB
+from db.LeagueDB import LeagueDB
 
 #%% riotAPI Class
 
 
-class RiotAPI(leagueDB):
+class RiotAPI(LeagueDB):
 
     #%% class inistalisation
     def __init__(
