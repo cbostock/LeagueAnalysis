@@ -379,9 +379,12 @@ class LeagueAnalysis(RiotAPI):
 
     #%%parse champ time dataframe
     def parse_champion_timeline_dataframe(
-        self, ts_df: pd.DataFrame = None, match_id: str = None
+        self, ts_df: pd.DataFrame = None, match_id: str = None, parse_on: str = 'championName'
     ):
         """Seperactes each champiosn data into their own dataframe within a dictionary.
+
+        Aggrogates the data for a given columns such as 'championName',
+        'summonerName', 'puuid'.  The default is to parse for 'championName'
 
 
         Parameters
@@ -390,6 +393,9 @@ class LeagueAnalysis(RiotAPI):
             DataFrame required to be parsed. The default is None.
         match_id : str, optional
             Match id of the data required. The default is None.
+        parse_on: str, optional
+            Chose what to arrgorate the dictionary on. For example,
+            'championName', 'summonerName', etc. The default is 'championName'
 
         Raises
         ------
@@ -398,7 +404,7 @@ class LeagueAnalysis(RiotAPI):
 
         Returns
         -------
-        champion_df_dict : dict
+        parsed_df_dict : dict
             The data for each chamption within a dictionary, where the 'keys'
             are the champion name, and the values are dataframes
 
@@ -424,7 +430,7 @@ class LeagueAnalysis(RiotAPI):
 
         """
 
-        champion_df_dict = {}
+        parsed_df_dict = {}
 
         if ts_df is None and match_id is not None:
             ts_df = self.create_champion_timeline_dataframe(match_id)
@@ -432,14 +438,14 @@ class LeagueAnalysis(RiotAPI):
             raise TypeError("DataFrame or match id required.")
 
         ts_df["time"] = ts_df["timestamp"] / 1_000 / 60
-        list_of_champs = ts_df["championName"].unique()
+        parse_list = ts_df[parse_on].unique()
 
-        for champ in list_of_champs:
-            champion_df_dict[champ] = (
-                ts_df[(ts_df["championName"] == champ)].copy().reset_index(drop=True)
+        for item in parse_list:
+            parsed_df_dict[item] = (
+                ts_df[(ts_df[parse_on] == item)].copy().reset_index(drop=True)
             )
 
-        return champion_df_dict
+        return parsed_df_dict
 
     #%%
 
