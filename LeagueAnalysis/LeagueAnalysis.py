@@ -84,7 +84,7 @@ class LeagueAnalysis(RiotAPI):
         """Create's a champion mastery table in a dataframe.
 
         Generates a dataframe with the champion, mastery level, mastery points,
-        and last time played.
+        and last time played. This infromation is not stored within the database
 
 
         Parameters
