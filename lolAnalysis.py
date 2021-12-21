@@ -118,14 +118,12 @@ class LeagueAnalysis(RiotAPI):
 
         """
 
-
         # champ mastery dataframe
         result = self.get_champion_mastery_by_summoner(summoner_name)
-        
-        if 'status' in result:
-            if result['status']['status_code'] == 403:
-                raise Exception('API key incorrect or expired.')
 
+        if "status" in result:
+            if result["status"]["status_code"] == 403:
+                raise Exception("API key incorrect or expired.")
 
         df = pd.DataFrame(result)
 
@@ -133,7 +131,9 @@ class LeagueAnalysis(RiotAPI):
         df["lastTimePlayed-dt"] = pd.to_datetime(df["lastPlayTime"], unit="ms")
 
         # int64 champion id
-        self.champion_list["df"]["championId"] = self.champion_list["df"].key.astype("int64")
+        self.champion_list["df"]["championId"] = self.champion_list["df"].key.astype(
+            "int64"
+        )
 
         # merge dataframes
         df = pd.merge(
@@ -187,7 +187,6 @@ class LeagueAnalysis(RiotAPI):
         [1650 rows x 50 columns]
 
         """
-
 
         # get timeline data
         raw_data_tl = self.get_match_timeline(match_id)
@@ -254,7 +253,7 @@ class LeagueAnalysis(RiotAPI):
         return tl_df
 
     #%% expand champion stats
-    def expand_champion_stats(self,ts_df:pd.DataFrame):
+    def expand_champion_stats(self, ts_df: pd.DataFrame):
         """Expand the champion stats, and damage columns.
 
 
@@ -275,42 +274,42 @@ class LeagueAnalysis(RiotAPI):
 
         """
 
-        pd.set_option('mode.chained_assignment', None)
+        pd.set_option("mode.chained_assignment", None)
 
         expanded_df = ts_df.copy()
 
         if len(expanded_df) == 0:
-            raise TypeError('DataFrame has a length of zero.')
+            raise TypeError("DataFrame has a length of zero.")
 
         # Champion Stats
-        champion_stat_keys = expanded_df['championStats'][0].copy().keys()
+        champion_stat_keys = expanded_df["championStats"][0].copy().keys()
 
         # preallocate columns
         for key in champion_stat_keys:
             expanded_df[key] = np.NaN
 
-        for j in range(0,len(expanded_df)):
-            row_champion_stats = expanded_df['championStats'][j].copy()
+        for j in range(0, len(expanded_df)):
+            row_champion_stats = expanded_df["championStats"][j].copy()
 
             for key in row_champion_stats:
                 expanded_df[key][j] = row_champion_stats[key]
 
-        expanded_df.drop(columns=['championStats'],inplace=True)
+        expanded_df.drop(columns=["championStats"], inplace=True)
 
         # Damage Stats
-        damage_stat_keys = expanded_df['damageStats'][0].copy().keys()
+        damage_stat_keys = expanded_df["damageStats"][0].copy().keys()
 
         # preallocate columns
         for key in damage_stat_keys:
             expanded_df[key] = np.NaN
 
-        for j in range(0,len(expanded_df)):
-            row_damage_stats = expanded_df['damageStats'][j].copy()
+        for j in range(0, len(expanded_df)):
+            row_damage_stats = expanded_df["damageStats"][j].copy()
 
             for key in row_damage_stats:
                 expanded_df[key][j] = row_damage_stats[key]
 
-        expanded_df.drop(columns=['damageStats'],inplace=True)
+        expanded_df.drop(columns=["damageStats"], inplace=True)
 
         return expanded_df
 
@@ -333,7 +332,6 @@ class LeagueAnalysis(RiotAPI):
         -------
 
         """
-
 
         # get timeline data
         raw_data_tl = self.get_match_timeline(match_id)
@@ -379,9 +377,10 @@ class LeagueAnalysis(RiotAPI):
 
         return ts_df
 
-
     #%%parse champ time dataframe
-    def parse_champion_timeline_dataframe(self,ts_df:pd.DataFrame = None, match_id : str = None):
+    def parse_champion_timeline_dataframe(
+        self, ts_df: pd.DataFrame = None, match_id: str = None
+    ):
         """Seperactes each champiosn data into their own dataframe within a dictionary.
 
 
@@ -425,19 +424,20 @@ class LeagueAnalysis(RiotAPI):
 
         """
 
-
         champion_df_dict = {}
 
         if ts_df is None and match_id is not None:
             ts_df = self.create_champion_timeline_dataframe(match_id)
         elif ts_df is None and match_id is None:
-            raise TypeError('DataFrame or match id required.')
+            raise TypeError("DataFrame or match id required.")
 
-        ts_df['time'] = ts_df['timestamp']/1_000/60
-        list_of_champs = ts_df['championName'].unique()
+        ts_df["time"] = ts_df["timestamp"] / 1_000 / 60
+        list_of_champs = ts_df["championName"].unique()
 
         for champ in list_of_champs:
-            champion_df_dict[champ] = ts_df[ (ts_df['championName'] == champ)].copy().reset_index(drop=True)
+            champion_df_dict[champ] = (
+                ts_df[(ts_df["championName"] == champ)].copy().reset_index(drop=True)
+            )
 
         return champion_df_dict
 

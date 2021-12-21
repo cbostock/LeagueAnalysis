@@ -14,17 +14,16 @@ from leagueDB import leagueDB
 
 class RiotAPI(leagueDB):
 
-
     #%% class inistalisation
     def __init__(
-            self,
-            apiKey: str,
-            ddragon: str = "9.3.1",
-            summonerName: str = None,
-            region: str = "euw",
-            dbCaching: bool = True,
-            dbName: str = None,
-            contsolePrintOut:bool =False,
+        self,
+        apiKey: str,
+        ddragon: str = "9.3.1",
+        summonerName: str = None,
+        region: str = "euw",
+        dbCaching: bool = True,
+        dbName: str = None,
+        contsolePrintOut: bool = False,
     ):
 
         """A basic class to interact with riots league of legends api endpoints.
@@ -233,7 +232,9 @@ class RiotAPI(leagueDB):
         ]: str = "/lol/match/v5/matches/{}/timeline"
 
     #%% make endpoint url
-    def __make_url(self, endpoint_key: str, summoner_name: str, regional_routing: bool = False):
+    def __make_url(
+        self, endpoint_key: str, summoner_name: str, regional_routing: bool = False
+    ):
         """Generates the appropriate url
 
 
@@ -338,7 +339,9 @@ class RiotAPI(leagueDB):
         champ_list = None
 
         if self.dbCachingActive:
-            champ_list = self.getStoredData("champ_list", "ddragon", self.ddragon_version)
+            champ_list = self.getStoredData(
+                "champ_list", "ddragon", self.ddragon_version
+            )
 
         # if we have stored data:
         if champ_list is not None:
@@ -370,13 +373,18 @@ class RiotAPI(leagueDB):
             # update lolbd
             if self.dbCachingActive:
                 self.insertData(
-                    "champ_list", "ddragon", self.ddragon_version, self.champion_list["data"]
+                    "champ_list",
+                    "ddragon",
+                    self.ddragon_version,
+                    self.champion_list["data"],
                 )
 
         return self.champion_list["df"]
 
     #%%
-    def __get_summmoner_data(self, endpoint: str, summoner_name: str, regional_routing: bool = False):
+    def __get_summmoner_data(
+        self, endpoint: str, summoner_name: str, regional_routing: bool = False
+    ):
         """Obtain Summoner Data.
 
 
@@ -439,7 +447,6 @@ class RiotAPI(leagueDB):
 
         """
 
-
         summoner_name = self.__validate_summoner_name(summoner_name)
 
         table = "summoner_names"
@@ -480,7 +487,6 @@ class RiotAPI(leagueDB):
 
         """
 
-
         summoner_name = self.__validate_summoner_name(summoner_name)
         self.__initalise_cache(summoner_name)
 
@@ -511,7 +517,9 @@ class RiotAPI(leagueDB):
         summoner_name = self.__validate_summoner_name(summoner_name)
 
         endpoint = "match-list"
-        result = self.__get_summmoner_data(endpoint, summoner_name, regional_routing=True)
+        result = self.__get_summmoner_data(
+            endpoint, summoner_name, regional_routing=True
+        )
 
         # update loldb
         if self.dbCachingActive and "status" not in result:
@@ -574,7 +582,6 @@ class RiotAPI(leagueDB):
 
         """
 
-
         table = "match_summary"
         endpoint = "match_summary"
 
@@ -608,7 +615,6 @@ class RiotAPI(leagueDB):
             The retrieved data in a dictionary format.
 
         """
-
 
         table = "match_timeline"
         endpoint = "match_timeline"

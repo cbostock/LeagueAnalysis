@@ -30,7 +30,6 @@ class leagueDB:
     #%%
     def __init__(self, dbName: str = None, contsolePrintOut: bool = False):
 
-
         # database name -- this could include a path
 
         if dbName is None:
@@ -79,7 +78,6 @@ class leagueDB:
                     )
                 )
 
-
     #%%
     def __consoleInsertPrintout(self, successful: bool, methodName: str, key: str):
 
@@ -97,7 +95,6 @@ class leagueDB:
                     )
                 )
 
-
     #%%
     def listOfSummonersStored(self):
         """Returns the list of summoners stored within the database.
@@ -109,7 +106,6 @@ class leagueDB:
             The list of summoners stored within the database.
 
         """
-
 
         listOfSummoners: list = []
 
@@ -143,8 +139,9 @@ class leagueDB:
                 )
             )
         except Exception as e:
-            raise Exception("{} - dropTimelineTable :: failed :: {}".format(self.db_name, e))
-
+            raise Exception(
+                "{} - dropTimelineTable :: failed :: {}".format(self.db_name, e)
+            )
 
     #%% get stored data
     def getStoredData(self, tblName: str, key: str, keyValue: str):
@@ -166,7 +163,6 @@ class leagueDB:
              The data associated with the key.
 
         """
-
 
         result = self.tables[tblName].get(self.user[key] == keyValue)
         self.__consoleGetPrintout(result, tblName, keyValue)
