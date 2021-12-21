@@ -100,10 +100,6 @@ class LeagueAnalysis(RiotAPI):
         Example
         -------
             df = lolA.create_mastery_table(); print(df)
-            loldb.json - summoner_names :: No data found for Dzukill
-            loldb.json - summoner_names :: No data found for Dzukill
-            loldb.json - summoner_names :: No data found for Dzukill
-            loldb.json - summoner_names :: data added to the db with the key Dzukill
             Out[65]:
                     name  championLevel  championPoints   lastTimePlayed-dt
             0      Yasuo              7          966690 2021-12-08 17:49:52
@@ -175,8 +171,6 @@ class LeagueAnalysis(RiotAPI):
         Example
         -------
         df = lolA.create_event_timeline_dataframe('EUW1_5612017679'); print(df)
-        loldb.json - match_timeline :: Data retrieved for EUW1_5612017679
-        loldb.json - match_summary :: Data retrieved for EUW1_5612017679
               realTimestamp  timestamp  ... championName_killer  individualPosition_killer
         0      1.639663e+12          0  ...                 NaN                        NaN
         1               NaN      25104  ...                 NaN                        NaN
