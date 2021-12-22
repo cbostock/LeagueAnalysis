@@ -26,7 +26,7 @@ Here, df is the DataFrame containing all mastery list information.  Any informat
 A more comprehensive example can be seen within the Example Notebook. 
  
 # Example notebook
- [![Made withJupyter](https://img.shields.io/badge/Made%20with-Jupyter-orange?style=for-the-badge&logo=Jupyter)](https://jupyter.org/try)
+ [![Made withJupyter](https://img.shields.io/badge/Made%20with-Jupyter-orange?style=for-the-badge&logo=Jupyter)](https://jupyter.org/try)  
 Within the folder LeagueAnalysis there is an example notebook named "example notebook.ipynb."  Many of the methods can be seen in use here in addition of how to plot the returned KPI's from riot.  One example is plotting total gold for the champions in the "bottom" role.  Another example plots the minions killed for the last five games for a given summoner name. 
 
 # Requirements
