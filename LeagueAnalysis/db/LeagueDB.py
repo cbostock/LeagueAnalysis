@@ -62,7 +62,7 @@ class LeagueDB:
         self.contsolePrintOut = contsolePrintOut
 
     #%%
-    def __consoleGetPrintout(self, result: str, methodName: str, key: str):
+    def __console_get_printout(self, result: str, methodName: str, key: str):
 
         if self.contsolePrintOut:
             if result == None:
@@ -79,7 +79,7 @@ class LeagueDB:
                 )
 
     #%%
-    def __consoleInsertPrintout(self, successful: bool, methodName: str, key: str):
+    def __console_insert_printout(self, successful: bool, methodName: str, key: str):
 
         if self.contsolePrintOut:
             if successful:
@@ -96,7 +96,7 @@ class LeagueDB:
                 )
 
     #%%
-    def listOfSummonersStored(self):
+    def get_list_of_summoners_stored(self):
         """Returns the list of summoners stored within the database.
 
 
@@ -115,7 +115,116 @@ class LeagueDB:
         return listOfSummoners
 
     #%% drop timeline table
-    def dropTimelineTable(self):
+    def drop_all_tables(self):
+        """ Drops all tables
+
+        This is to be used when wanting to reduce processing time or reduce the db size.
+
+        Raises
+        ------
+        Exception
+            Failure when dropping the timeline table
+
+        Returns
+        -------
+        None.
+
+        """
+
+        self.drop_champ_list_table()
+        self.drop_match_summary_table()
+        self.drop_summoner_info_table()
+        self.drop_timeline_table()
+
+    #%% drop timeline table
+    def drop_champ_list_table(self):
+        """ Drops all tables from the ***-cl.json.
+
+        This is to be used when wanting to reduce processing time or reduce the db size.
+
+        Raises
+        ------
+        Exception
+            Failure when dropping the timeline table
+
+        Returns
+        -------
+        None.
+
+        """
+
+        try:
+            self.db_cl.drop_tables()
+            print(
+                "{} - dropChampListTable :: match_timeline table dropped".format(
+                    self.champlist_db_name
+                )
+            )
+        except Exception as e:
+            raise Exception(
+                "{} - dropChampListTable :: failed :: {}".format(self.champlist_db_name, e)
+            )
+
+    #%% drop timeline table
+    def drop_match_summary_table(self):
+        """ Drops all tables from the ***-ms.json.
+
+        This is to be used when wanting to reduce processing time or reduce the db size.
+
+        Raises
+        ------
+        Exception
+            Failure when dropping the timeline table
+
+        Returns
+        -------
+        None.
+
+        """
+
+        try:
+            self.db_ms.drop_tables()
+            print(
+                "{} - dropMatchSummaryTable :: match_timeline table dropped".format(
+                    self.matchSummary_db_name
+                )
+            )
+        except Exception as e:
+            raise Exception(
+                "{} - dropMatchSummaryTable :: failed :: {}".format(self.matchSummary_db_name, e)
+            )
+
+    #%%
+    def drop_summoner_info_table(self):
+        """ Drops all tables from the ***.json.
+
+        This is to be used when wanting to reduce processing time or reduce the db size.
+
+        Raises
+        ------
+        Exception
+            Failure when dropping the timeline table
+
+        Returns
+        -------
+        None.
+
+        """
+
+        try:
+            self.db.drop_tables()
+            print(
+                "{} - dropSummaryInfoTable :: match_timeline table dropped".format(
+                    self.db_name
+                )
+            )
+        except Exception as e:
+            raise Exception(
+                "{} - dropSummaryInfoTable :: failed :: {}".format(self.db_name, e)
+            )
+
+    #%% drop timeline table
+    def drop_timeline_table(self):
         """ Drops all tables from the ***-tl.json.
 
         This is to be used when wanting to reduce processing time or reduce the db size.
@@ -165,7 +274,7 @@ class LeagueDB:
         """
 
         result = self.tables[tblName].get(self.user[key] == keyValue)
-        self.__consoleGetPrintout(result, tblName, keyValue)
+        self.__console_get_printout(result, tblName, keyValue)
 
         return result
 
@@ -210,7 +319,7 @@ class LeagueDB:
         else:
             successful = True
 
-        self.__consoleInsertPrintout(successful, tblName, keyValue)
+        self.__console_insert_printout(successful, tblName, keyValue)
 
         return successful
 
