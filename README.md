@@ -3,7 +3,7 @@
 ![](https://img.shields.io/pypi/status/ansicolortags.svg)   ![](https://img.shields.io/pypi/l/ansicolortags.svg) ![](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)  ![](https://img.shields.io/badge/Made%20with%20-Anaconda-limegreen) ![](https://img.shields.io/badge/code%20style-black-black.svg)
 
 ### About the project 
-Pre-curer: this project was more of a self-developing journey of how to develop conventional python code.  In this project I wanted to utilise a lightweight NoSql database, TinyDB (for learning purposes).  This project was developed with the use of Anaconda.
+Pre-curer: this project was more of a self-developing journey of how to develop conventional python code.  In this project I wanted to utilise a lightweight NoSql database, TinyDB (for learning purposes).  This project was also developed with the use of Anaconda.
 
 The aim of the project was to retrieve data from riots api and format the data into an easy manageable data structures, namely pandas DataFrames. I am aware of other projects which were developed for primarily retrieve data from riots endpoints such as [RiotWatcher](https://riot-watcher.readthedocs.io/en/latest/).  However, as this project was for developing my own skills I decided to create the requests myself. 
 
