@@ -5,9 +5,11 @@
 ### About the project 
 Pre-curer: this project was more of a self-developing journey of how to develop conventional python code.  In this project I wanted to utilise a lightweight NoSql database, TinyDB (for learning purposes).  This project was also developed with the use of Anaconda.
 
-The aim of the project was to retrieve data from riots api and format the data into an easy manageable data structures, namely pandas DataFrames. I am aware of other projects which were developed for primarily retrieve data from riots endpoints such as [RiotWatcher](https://riot-watcher.readthedocs.io/en/latest/).  However, as this project was for developing my own skills I decided to create the requests myself. 
+The aim of the project was to retrieve data from riots api for the league of legends match, and mastery data qnd format the data into an easy manageable data structures, namely pandas within DataFrames. I am aware of other projects which were developed for primarily retrieve data from riots endpoints such as [RiotWatcher](https://riot-watcher.readthedocs.io/en/latest/).  However, as this project was for developing my own skills I decided to create the requests myself. 
 
 ### Obtaining data.
+
+Using your own API key, the key below is for demonstration purposes and has exired you can, using the following section will return the champion mastery DataFrame for the given summoner name.
 
 	import pandas as pd
 	from LeagueAnalysis import LeagueAnalysis
@@ -21,7 +23,7 @@ The aim of the project was to retrieve data from riots api and format the data i
 	# retrieve mastery list
 	df = lolA.create_mastery_table()
 
-Here, df is the DataFrame containing all mastery list information.  Any information which will be used again, such as summoner information (id, puuid etc.) will be stored locally within a database. 
+Here, df is the DataFrame containing all mastery list information, including the last time played.  Any information which could be potentially used again, such as summoner information (id, puuid etc.) will be stored locally within a database. 
 
 A more comprehensive example can be seen within the Example Notebook. 
  
