@@ -162,7 +162,9 @@ class LeagueDB:
             )
         except Exception as e:
             raise Exception(
-                "{} - dropChampListTable :: failed :: {}".format(self.champlist_db_name, e)
+                "{} - dropChampListTable :: failed :: {}".format(
+                    self.champlist_db_name, e
+                )
             )
 
     #%% drop timeline table
@@ -191,7 +193,9 @@ class LeagueDB:
             )
         except Exception as e:
             raise Exception(
-                "{} - dropMatchSummaryTable :: failed :: {}".format(self.matchSummary_db_name, e)
+                "{} - dropMatchSummaryTable :: failed :: {}".format(
+                    self.matchSummary_db_name, e
+                )
             )
 
     #%%
