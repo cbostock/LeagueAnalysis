@@ -44,11 +44,18 @@ lolA = LeagueAnalysis(apiKey, summonerName="Moving Object 2")
 
 #%%
 
+example_plotting_data = lolA.create_champion_timeline_dataframe('EUW1_5612017679')
+example_plotting_dict = lolA.parse_champion_timeline_dataframe(example_plotting_data, parse_on='summonerName')
 
-example_plotting_data = lolA.create_event_timeline_dataframe('EUW1_5612017679')
-example_plotting_dict = lolA.parse_champion_timeline_dataframe(example_plotting_data, parse_on='teamId')
+df = example_plotting_dict['Moving Object 2']
 
-#%%
 
-lolA.plot_positional_data(example_plotting_dict[100.0],example_plotting_dict[200.0],index_label=True)
+
+# example_plotting_data = lolA.create_event_timeline_dataframe('EUW1_5612017679')
+# example_plotting_dict = lolA.parse_champion_timeline_dataframe(example_plotting_data, parse_on='teamId')
+
+# #%%
+
+# lolA.plot_positional_data(example_plotting_dict[100.0],example_plotting_dict[200.0],index_label=True)
+
 
