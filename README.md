@@ -37,6 +37,7 @@ Within the folder LeagueAnalysis there is an example notebook named "[example no
 - requests
 - pandas
 - numpy
+- matplotlib
 - [TinyDB](https://pypi.org/project/tinydb/) ( [Anaconda](https://anaconda.org/conda-forge/tinydb) ) 
 
 # References
