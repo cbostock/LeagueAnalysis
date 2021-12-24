@@ -7,6 +7,7 @@ Created on Fri Dec 17 10:14:31 2021
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from riotAPI import RiotAPI
 
@@ -14,7 +15,9 @@ from riotAPI import RiotAPI
 
 
 class LeagueAnalysis(RiotAPI):
-    """ """
+    """League Analysis
+
+    """
 
     def __init__(
         self,
@@ -76,8 +79,6 @@ class LeagueAnalysis(RiotAPI):
             dbName=dbName,
             contsolePrintOut=contsolePrintOut,
         )
-
-        return
 
     #%% data analysis // top chamnps and last played time within in dataframe
     def create_mastery_table(self, summoner_name: str = None):
@@ -146,7 +147,13 @@ class LeagueAnalysis(RiotAPI):
         return clean_df
 
     #%% create a dataframe from the timeline data
-    def create_event_timeline_dataframe(self, match_id: str):
+    def create_event_timeline_dataframe(
+        self,
+        match_id: str,
+        creator_id: bool = True,
+        victim_id: bool = True,
+        killer_id: bool = True,
+    ):
         """Creates a timeline dataframe with information from two api endpoints.
 
         Data from the timeline api, and the match summary api are used here to
@@ -162,6 +169,13 @@ class LeagueAnalysis(RiotAPI):
         ----------
         match_id : str
             The match id for the reasulting timeline dataframe.
+        creator_id : bool
+            If a join is required to obtain the createrId's summoner name etc.
+            Namely for WARD_PLACED events. The default is True.
+        victim_id : bool
+            If a join is required to obtain the victimId's summoner name etc. The default is True.
+        killer_id : bool
+            If a join is required to obtain the killerId's summoner name etc. The default is True.
 
         Returns
         -------
@@ -213,6 +227,8 @@ class LeagueAnalysis(RiotAPI):
                 "puuid",
                 "championName",
                 "individualPosition",
+                "teamId",
+                "win",
             ]
         ]
 
@@ -228,32 +244,46 @@ class LeagueAnalysis(RiotAPI):
             "outer",
             left_on="participantId",
             right_on="participantId",
+            suffixes=("", "_info"),
         )
 
-        # obtain the victims information
-        tl_df = pd.merge(
-            tl_df,
-            participants_summary,
-            "outer",
-            left_on="victimId",
-            right_on="participantId",
-            suffixes=("", "_victim"),
-        )
+        if creator_id:
+            # Obtain creator id
+            tl_df = pd.merge(
+                tl_df,
+                participants_summary,
+                "outer",
+                left_on="creatorId",
+                right_on="participantId",
+                suffixes=("", "_creator"),
+            )
 
-        # obtain the killers information
-        tl_df = pd.merge(
-            tl_df,
-            participants_summary,
-            "outer",
-            left_on="killerId",
-            right_on="participantId",
-            suffixes=("", "_killer"),
-        )
+        if victim_id:
+            # obtain the victims information
+            tl_df = pd.merge(
+                tl_df,
+                participants_summary,
+                "outer",
+                left_on="victimId",
+                right_on="participantId",
+                suffixes=("", "_victim"),
+            )
+
+        if killer_id:
+            # obtain the killers information
+            tl_df = pd.merge(
+                tl_df,
+                participants_summary,
+                "outer",
+                left_on="killerId",
+                right_on="participantId",
+                suffixes=("", "_killer"),
+            )
 
         return tl_df
 
     #%% expand champion stats
-    def expand_champion_stats(self, ts_df: pd.DataFrame):
+    def expand_champion_stats(self, event_df: pd.DataFrame):
         """Expand the champion stats, and damage columns.
 
 
@@ -276,7 +306,7 @@ class LeagueAnalysis(RiotAPI):
 
         pd.set_option("mode.chained_assignment", None)
 
-        expanded_df = ts_df.copy()
+        expanded_df = event_df.copy()
 
         if len(expanded_df) == 0:
             raise TypeError("DataFrame has a length of zero.")
@@ -359,6 +389,8 @@ class LeagueAnalysis(RiotAPI):
                 "puuid",
                 "championName",
                 "individualPosition",
+                "teamId",
+                "win",
             ]
         ]
 
@@ -379,7 +411,10 @@ class LeagueAnalysis(RiotAPI):
 
     #%%parse champ time dataframe
     def parse_champion_timeline_dataframe(
-        self, ts_df: pd.DataFrame = None, match_id: str = None, parse_on: str = 'championName'
+        self,
+        ts_df: pd.DataFrame = None,
+        match_id: str = None,
+        parse_on: str = "championName",
     ):
         """Seperactes each champiosn data into their own dataframe within a dictionary.
 
@@ -448,7 +483,88 @@ class LeagueAnalysis(RiotAPI):
         return parsed_df_dict
 
     #%%
+    def __plot_positions(self, ax, df, face_colour, index_label):
 
+        # plot position data
+        for index, row in df.iterrows():
+            position = row["position"]
+
+            if isinstance(position, dict):
+                ax.plot(
+                    int(position["x"]),
+                    int(position["y"]),
+                    "X",
+                    markeredgecolor="k",
+                    markerfacecolor=face_colour,
+                    ms=8,
+                )
+
+                if index_label:
+                    ax.text(
+                        int(position["x"]),
+                        int(position["y"]),
+                        str(index),
+                        horizontalalignment="left",
+                        fontweight="semibold",
+                    )
+
+    #%%
+    def plot_positional_data(
+        self,
+        df: pd.DataFrame = None,
+        df_for_comparison: pd.DataFrame = None,
+        map_type: str = "summoners rift",
+        index_label: bool = False,
+    ):
+        """Plot event data.
+
+        The passed DataFrame requires the position columns which is returned
+        from the riot api endpoint.  The values within this column are stored
+        are stored within a dictionary.
+
+
+        Parameters
+        ----------
+        df : pd.DataFrame, optional
+            DESCRIPTION. The default is None.
+        df_for_comparison : pd.DataFrame, optional
+            DESCRIPTION. The default is None.
+        map_type : str, optional
+            DESCRIPTION. The default is 'summoners rift'.
+        index_label : bool, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        matplotlib figure.
+
+        """
+
+        # Read map png
+        if map_type == "summoners rift":
+            img = plt.imread("summoners_rift_map_11.png")
+        elif map_type == "howling abyss":
+            img = plt.imread("howling_abyss_map_12.png")
+        else:
+            raise NameError('map_type: {} not found'.format(map_type))
+
+        # show map on plot
+        fig, ax = plt.subplots()
+
+        map_size = 14_750
+        ax.imshow(img, extent=[0, map_size, 0, map_size])
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        if df_for_comparison is not None:
+            face_colour = "#EE3B3B"
+        else:
+            face_colour = "#32CD32"
+
+        self.__plot_positions(ax, df, face_colour, index_label)
+
+        if df_for_comparison is not None:
+            self.__plot_positions(ax, df_for_comparison, "#1E90FF", index_label)
 
 if __name__ == "__main__":
     print("main")

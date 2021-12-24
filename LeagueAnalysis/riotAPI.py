@@ -582,8 +582,8 @@ class RiotAPI(LeagueDB):
 
         """
 
-        table :str = "match_summary"
-        endpoint :str = "match_summary"
+        table: str = "match_summary"
+        endpoint: str = "match_summary"
 
         result = self.getStoredData(table, "match_id", match_id)
 
@@ -592,9 +592,9 @@ class RiotAPI(LeagueDB):
 
             if self.dbCachingActive:
                 self.insertData(table, "match_id", match_id, reponse_result)
-            
-            result :dict = {}
-            result['details'] = reponse_result
+
+            result: dict = {}
+            result["details"] = reponse_result
 
         return result
 
@@ -619,8 +619,8 @@ class RiotAPI(LeagueDB):
 
         """
 
-        table :str = "match_timeline"
-        endpoint :str = "match_timeline"
+        table: str = "match_timeline"
+        endpoint: str = "match_timeline"
 
         result = self.getStoredData(table, "match_id", match_id)
 
@@ -629,9 +629,9 @@ class RiotAPI(LeagueDB):
 
             if self.dbCachingActive:
                 self.insertData(table, "match_id", match_id, reponse_result)
-            
-            result :dict = {}
-            result['details'] = reponse_result
+
+            result: dict = {}
+            result["details"] = reponse_result
 
         return result
 
