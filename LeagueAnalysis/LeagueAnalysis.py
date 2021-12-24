@@ -511,7 +511,7 @@ class LeagueAnalysis(RiotAPI):
     #%%
     def plot_positional_data(
         self,
-        df: pd.DataFrame = None,
+        df: pd.DataFrame,
         df_for_comparison: pd.DataFrame = None,
         map_type: str = "summoners rift",
         index_label: bool = False,
@@ -525,14 +525,18 @@ class LeagueAnalysis(RiotAPI):
 
         Parameters
         ----------
-        df : pd.DataFrame, optional
-            DESCRIPTION. The default is None.
+        df : pd.DataFrame
+            pd.DataFrame with a position column which requires plotting.
+            Blue markers when two pd.DataFrames are being plotted.
         df_for_comparison : pd.DataFrame, optional
-            DESCRIPTION. The default is None.
+            An additional pd.DataFrame with a position column that will be
+            plotted along side the first pd.DataFrame. Red markers when two
+            pd.DataFrames are being plotted. The default is None.
         map_type : str, optional
-            DESCRIPTION. The default is 'summoners rift'.
+            Minimap style: 'summoners rift' or 'howling abyss'. The default
+            is 'summoners rift'.
         index_label : bool, optional
-            DESCRIPTION. The default is False.
+            Index value printed next to the marker. The default is False.
 
         Returns
         -------
