@@ -312,7 +312,7 @@ class LeagueAnalysis(RiotAPI):
 
         Parameters
         ----------
-        ts_df : pd.DataFrame
+        event_df : pd.DataFrame
             The resuling DataFrame from self.create_champion_timeline_dataframe()
 
         Raises
@@ -435,7 +435,7 @@ class LeagueAnalysis(RiotAPI):
     #%% parse_champion_timeline_dataframe
     def parse_champion_timeline_dataframe(
         self,
-        ts_df: pd.DataFrame = None,
+        tl_df: pd.DataFrame = None,
         match_id: str = None,
         parse_on: str = "championName",
     ):
@@ -447,7 +447,7 @@ class LeagueAnalysis(RiotAPI):
 
         Parameters
         ----------
-        ts_df : pd.DataFrame, optional
+        tl_df : pd.DataFrame, optional
             DataFrame required to be parsed. The default is None.
         match_id : str, optional
             Match id of the data required. The default is None.
@@ -490,17 +490,17 @@ class LeagueAnalysis(RiotAPI):
 
         parsed_df_dict = {}
 
-        if ts_df is None and match_id is not None:
-            ts_df = self.create_champion_timeline_dataframe(match_id)
-        elif ts_df is None and match_id is None:
+        if tl_df is None and match_id is not None:
+            tl_df = self.create_champion_timeline_dataframe(match_id)
+        elif tl_df is None and match_id is None:
             raise TypeError("DataFrame or match id required.")
 
-        ts_df["time"] = ts_df["timestamp"] / 1_000 / 60
-        parse_list = ts_df[parse_on].unique()
+        tl_df["time"] = tl_df["timestamp"] / 1_000 / 60
+        parse_list = tl_df[parse_on].unique()
 
         for item in parse_list:
             parsed_df_dict[item] = (
-                ts_df[(ts_df[parse_on] == item)].copy().reset_index(drop=True)
+                tl_df[(tl_df[parse_on] == item)].copy().reset_index(drop=True)
             )
 
         return parsed_df_dict

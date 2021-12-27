@@ -102,7 +102,7 @@ class LeagueDB:
 
         Returns
         -------
-        listOfSummoners : List
+        list_of_summoners : List
             The list of summoners stored within the database.
 
         """
@@ -121,8 +121,8 @@ class LeagueDB:
 
         Parameters
         ----------
-        summoner_name : str
-            Summoner name for the requested list of match id's.
+        account_id : str
+            Account id for the requested list of match id's.
 
         Returns
         -------
@@ -318,7 +318,7 @@ class LeagueDB:
             Table in which the data is being stored.
         key : str
             The key name for the given table. For example, 'match_id'.
-        keyValue : str
+        key_value : str
             The the value of the key which is being stored.  For example, 'EUW1_5612017679'.
         data : dict
             The data associated with the key.
@@ -359,9 +359,9 @@ class LeagueDB:
 
         Parameters
         ----------
-        summoner_name : str
+        account_id : str
             Summoner name the matches are associated with.
-        newMatches : list
+        new_matches : list
             A list of match id's.
             For example ['EUW1_5612017679','EUW1_561201780','EUW1_56120176781'].
 
