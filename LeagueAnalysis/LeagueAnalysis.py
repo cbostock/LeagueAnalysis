@@ -11,23 +11,22 @@ import matplotlib.pyplot as plt
 
 from riotAPI import RiotAPI
 
-#%%
-
-
+#%% LeagueAnalysis
 class LeagueAnalysis(RiotAPI):
     """League Analysis
 
     """
 
+    #%% __init__
     def __init__(
         self,
-        apiKey: str,
+        api_key: str,
         ddragon: str = "9.3.1",
-        summonerName: str = None,
+        summoner_name: str = None,
         region: str = "euw",
-        dbCaching: bool = True,
-        dbName: str = None,
-        contsolePrintOut: bool = False,
+        db_saving: bool = True,
+        db_name: str = None,
+        contsole_print_out: bool = False,
     ):
         """ A object used to analysis league of legends data.
 
@@ -37,14 +36,14 @@ class LeagueAnalysis(RiotAPI):
 
         Parameters
         ----------
-        apiKey: str
+        api_key: str
              Your api key to access riot's api endpoints.
 
          ddragon: str
              (Default value = 9.3.1)
              The data dragon version to obtain.
 
-         summonerName: str
+         summoner_name: str
              (Default value = None)
              The summoner name for all data retrieval when no other summoner
              name has been defined.
@@ -53,7 +52,7 @@ class LeagueAnalysis(RiotAPI):
              (Default value = euw)
              Server region of the summoner
 
-         dbCaching: bool
+         db_saving: bool
              (Default value = True)
              To enable db caching to reduce api calls for already recieved data.
              Storing the data within local database allows for future analysis
@@ -71,16 +70,43 @@ class LeagueAnalysis(RiotAPI):
         """
 
         super().__init__(
-            apiKey,
-            ddragon=ddragon,
-            summonerName=summonerName,
-            region=region,
-            dbCaching=dbCaching,
-            dbName=dbName,
-            contsolePrintOut=contsolePrintOut,
+            api_key,
+            ddragon = ddragon,
+            summoner_name = summoner_name,
+            region = region,
+            db_saving = db_saving,
+            db_name = db_name,
+            contsole_print_out = contsole_print_out,
         )
 
-    #%% data analysis // top chamnps and last played time within in dataframe
+    #%% __plot_positions
+    @staticmethod
+    def __plot_positions(ax, df, face_colour, index_label):
+
+        # plot position data
+        for index, row in df.iterrows():
+            position = row["position"]
+
+            if isinstance(position, dict):
+                ax.plot(
+                    int(position["x"]),
+                    int(position["y"]),
+                    "X",
+                    markeredgecolor="k",
+                    markerfacecolor=face_colour,
+                    ms=8,
+                )
+
+                if index_label:
+                    ax.text(
+                        int(position["x"]),
+                        int(position["y"]),
+                        str(index),
+                        horizontalalignment="left",
+                        fontweight="semibold",
+                    )
+
+    #%% create_mastery_table
     def create_mastery_table(self, summoner_name: str = None):
         """Create's a champion mastery table in a dataframe.
 
@@ -142,7 +168,7 @@ class LeagueAnalysis(RiotAPI):
 
         return clean_df
 
-    #%% create a dataframe from the timeline data
+    #%% create_event_timeline_dataframe
     def create_event_timeline_dataframe(
         self,
         match_id: str,
@@ -278,8 +304,9 @@ class LeagueAnalysis(RiotAPI):
 
         return tl_df
 
-    #%% expand champion stats
-    def expand_champion_stats(self, event_df: pd.DataFrame):
+    #%% expand_champion_stats
+    @staticmethod
+    def expand_champion_stats(event_df: pd.DataFrame):
         """Expand the champion stats, and damage columns.
 
 
@@ -339,7 +366,7 @@ class LeagueAnalysis(RiotAPI):
 
         return expanded_df
 
-    #%% creat time series data
+    #%% create_champion_timeline_dataframe
     def create_champion_timeline_dataframe(self, match_id: str):
         """Create a timesries dataframe from the timeline endpoint.
 
@@ -405,7 +432,7 @@ class LeagueAnalysis(RiotAPI):
 
         return ts_df
 
-    #%%parse champ time dataframe
+    #%% parse_champion_timeline_dataframe
     def parse_champion_timeline_dataframe(
         self,
         ts_df: pd.DataFrame = None,
@@ -478,33 +505,7 @@ class LeagueAnalysis(RiotAPI):
 
         return parsed_df_dict
 
-    #%%
-    def __plot_positions(self, ax, df, face_colour, index_label):
-
-        # plot position data
-        for index, row in df.iterrows():
-            position = row["position"]
-
-            if isinstance(position, dict):
-                ax.plot(
-                    int(position["x"]),
-                    int(position["y"]),
-                    "X",
-                    markeredgecolor="k",
-                    markerfacecolor=face_colour,
-                    ms=8,
-                )
-
-                if index_label:
-                    ax.text(
-                        int(position["x"]),
-                        int(position["y"]),
-                        str(index),
-                        horizontalalignment="left",
-                        fontweight="semibold",
-                    )
-
-    #%%
+    #%% plot_positional_data
     def plot_positional_data(
         self,
         df: pd.DataFrame,
@@ -544,9 +545,9 @@ class LeagueAnalysis(RiotAPI):
 
         # Read map png
         if map_type == "summoners rift":
-            img = plt.imread("summoners_rift_map_11.png")
+            img = plt.imread("maps\\summoners_rift_map_11.png")
         elif map_type == "howling abyss":
-            img = plt.imread("howling_abyss_map_12.png")
+            img = plt.imread("maps\\howling_abyss_map_12.png")
         else:
             raise NameError("map_type: {} not found".format(map_type))
 
@@ -568,13 +569,13 @@ class LeagueAnalysis(RiotAPI):
         if df_for_comparison is not None:
             self.__plot_positions(ax, df_for_comparison, colours["red"], index_label)
 
-    #%%
+    #%% combine_match_summaries
     def combine_match_summaries(self, summoner_name: str, match_id_list: list):
         """Create a pd.DataFrame of all the match summaries for a given summoner.
-        
+
         The pd.DataFrame generated compiles all the match summaries for a given
         summoner for a list of specified games.
-        
+
 
         Parameters
         ----------
@@ -618,6 +619,6 @@ class LeagueAnalysis(RiotAPI):
 
         return summoner_match_summaries
 
-
+#%% if __name__ == "__main__":
 if __name__ == "__main__":
     print("main")
