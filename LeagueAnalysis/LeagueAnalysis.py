@@ -71,12 +71,12 @@ class LeagueAnalysis(RiotAPI):
 
         super().__init__(
             api_key,
-            ddragon = ddragon,
-            summoner_name = summoner_name,
-            region = region,
-            db_saving = db_saving,
-            db_name = db_name,
-            contsole_print_out = contsole_print_out,
+            ddragon=ddragon,
+            summoner_name=summoner_name,
+            region=region,
+            db_saving=db_saving,
+            db_name=db_name,
+            contsole_print_out=contsole_print_out,
         )
 
     #%% __plot_positions
@@ -618,6 +618,7 @@ class LeagueAnalysis(RiotAPI):
                 continue
 
         return summoner_match_summaries
+
 
 #%% if __name__ == "__main__":
 if __name__ == "__main__":
