@@ -122,10 +122,6 @@ class LeagueAnalysis(RiotAPI):
         # champ mastery dataframe
         result = self.get_champion_mastery_by_summoner(summoner_name)
 
-        if "status" in result:
-            if result["status"]["status_code"] == 403:
-                raise Exception("API key incorrect or expired.")
-
         df = pd.DataFrame(result)
 
         # readable datetime
@@ -544,13 +540,15 @@ class LeagueAnalysis(RiotAPI):
 
         """
 
+        colours = {"blue": "#1E90FF", "red": "#EE3B3B", "green": "#32CD32"}
+
         # Read map png
         if map_type == "summoners rift":
             img = plt.imread("summoners_rift_map_11.png")
         elif map_type == "howling abyss":
             img = plt.imread("howling_abyss_map_12.png")
         else:
-            raise NameError('map_type: {} not found'.format(map_type))
+            raise NameError("map_type: {} not found".format(map_type))
 
         # show map on plot
         fig, ax = plt.subplots()
@@ -561,14 +559,65 @@ class LeagueAnalysis(RiotAPI):
         ax.set_yticks([])
 
         if df_for_comparison is not None:
-            face_colour = "#EE3B3B"
+            face_colour = colours["blue"]
         else:
-            face_colour = "#32CD32"
+            face_colour = colours["green"]
 
         self.__plot_positions(ax, df, face_colour, index_label)
 
         if df_for_comparison is not None:
-            self.__plot_positions(ax, df_for_comparison, "#1E90FF", index_label)
+            self.__plot_positions(ax, df_for_comparison, colours["red"], index_label)
+
+    #%%
+    def combine_match_summaries(self, summoner_name: str, match_id_list: list):
+        """Create a pd.DataFrame of all the match summaries for a given summoner.
+        
+        The pd.DataFrame generated compiles all the match summaries for a given
+        summoner for a list of specified games.
+        
+
+        Parameters
+        ----------
+        summoner_name : str
+            sumoner name.
+        match_id_list : list
+            DESCRIPTION.
+
+        Returns
+        -------
+        summoner_match_summaries : TYPE
+            DESCRIPTION.
+
+        """
+
+        summoner_match_summaries = pd.DataFrame()
+
+        for match_id in match_id_list:
+
+            try:
+
+                match_details = self.get_match_summary(match_id)
+
+                if "status" not in match_details:
+
+                    match_details_df = pd.DataFrame(
+                        match_details["details"]["info"]["participants"]
+                    )
+
+                    match_details_df["match_id"] = match_id
+
+                    summoner_match_summaries = summoner_match_summaries.append(
+                        match_details_df[
+                            (match_details_df["summonerName"] == summoner_name)
+                        ]
+                    )
+
+            except:
+                print("unable to get match summary for: {}".format(match_id))
+                continue
+
+        return summoner_match_summaries
+
 
 if __name__ == "__main__":
     print("main")

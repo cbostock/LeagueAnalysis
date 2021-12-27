@@ -158,28 +158,39 @@ class RiotAPI(LeagueDB):
 
         region = self.region.lower()
 
-        if region == "br":
-            self.api_details["url"] = "https://br1.api.riotgames.com"
-        elif region == "eune":
-            self.api_details["url"] = "https://eun1.api.riotgames.com"
-        elif region == "euw":
-            self.api_details["url"] = "https://euw1.api.riotgames.com"
-        elif region == "jp":
-            self.api_details["url"] = "https://jp1.api.riotgames.com"
-        elif region == "kr":
-            self.api_details["url"] = "https://kr.api.riotgames.com"
-        elif region == "la1":
-            self.api_details["url"] = "https://la1.api.riotgames.com"
-        elif region == "la2":
-            self.api_details["url"] = "https://la2.api.riotgames.com"
-        elif region == "na":
-            self.api_details["url"] = "https://na1.api.riotgames.com"
-        elif region == "oc":
-            self.api_details["url"] = "https://oc1.api.riotgames.com"
-        elif region == "tr":
-            self.api_details["url"] = "https://tr1.api.riotgames.com"
-        elif region == "ru":
-            self.api_details["url"] = "https://ru.api.riotgames.com"
+        url_list = {}
+        url_list["br"] = "https://br1.api.riotgames.com"
+        url_list["eune"] = "https://eun1.api.riotgames.com"
+        url_list["euw"] = "https://euw1.api.riotgames.com"
+        url_list["jp"] = "https://jp1.api.riotgames.com"
+        url_list["kr"] = "https://kr.api.riotgames.com"
+        url_list["la1"] = "https://la1.api.riotgames.com"
+        url_list["la2"] = "https://la2.api.riotgames.com"
+        url_list["na"] = "https://na1.api.riotgames.com"
+        url_list["oc"] = "https://oc1.api.riotgames.com"
+        url_list["tr"] = "https://tr1.api.riotgames.com"
+        url_list["ru"] = "https://ru.api.riotgames.com"
+
+        region_list = [
+            "br",
+            "eune",
+            "euw",
+            "jp",
+            "kr",
+            "la1",
+            "la2",
+            "na",
+            "oc",
+            "tr",
+            "ru",
+        ]
+
+        if region not in region_list:
+            raise NameError(
+                "{} is not in the list of regions: {}".format(region, region_list)
+            )
+
+        self.api_details["url"] = url_list[region]
 
         if region in ["eune", "euw", "ru", "tr"]:
             self.api_details["regionalRouting"] = "https://europe.api.riotgames.com"
@@ -261,10 +272,7 @@ class RiotAPI(LeagueDB):
 
         # if we don't go and get it
         if summoner_datails is None:
-            summoner_datails_retrned = self.get_summoner_by_name(summoner_name)
-
-            summoner_datails = {}
-            summoner_datails["details"] = summoner_datails_retrned
+            summoner_datails = self.get_summoner_by_name(summoner_name)
 
         # regional routing..
         if regional_routing:
@@ -315,6 +323,34 @@ class RiotAPI(LeagueDB):
 
         return url
 
+    #%% response checker
+    def __response_checker(self, response):
+        """Check the vadility of the response
+
+
+        Parameters
+        ----------
+        response : TYPE
+            response from the api call.
+
+        Raises
+        ------
+        Exception
+            If the data has not been returned.
+
+        Returns
+        -------
+        None.
+
+        """
+
+        if "status" in response and "status_code" in response["status"]:
+            raise Exception(
+                "Error: {} API key incorrect or expired.".format(
+                    response["status"]["status_code"]
+                )
+            )
+
     #%% get the champion list from data dragon
     def get_champ_details(self):
         """Retreives the data dragon data via riot's api.
@@ -360,6 +396,7 @@ class RiotAPI(LeagueDB):
                 try:
                     response = requests.get(url)
                     self.champion_list = response.json()
+                    self.__response_checker(self.champion_list)
                 except Exception as e:
                     raise Exception("get_champ_details :: failed :: {}".format(e))
 
@@ -420,6 +457,7 @@ class RiotAPI(LeagueDB):
         try:
             response = requests.get(url, headers=self.header)
             result = response.json()
+            self.__response_checker(result)
         except Exception as e:
             raise Exception("{} :: failed :: {}".format(endpoint, e))
 
@@ -459,12 +497,40 @@ class RiotAPI(LeagueDB):
             result = None
 
         if result is None:
-            result = self.__get_summmoner_data(endpoint, summoner_name)
+            result_returned = self.__get_summmoner_data(endpoint, summoner_name)
+
+            result = {}
+            result["details"] = result_returned
 
             if self.dbCachingActive and "status" not in result:
-                self.insertData(table, table_key, summoner_name, result)
+                self.insertData(table, table_key, summoner_name, result_returned)
 
         return result
+
+    #%%
+    def get_summoner_account_id(self, summoner_name: str = None):
+        """Returns the account id for a summoner name.
+
+
+        Parameters
+        ----------
+        summoner_name : str, optional
+            Summoner name for the account requring the information. The default is None.
+
+        Returns
+        -------
+        summoner_id : str
+            account id for the summoner
+
+        """
+
+        summoner_name = self.__validate_summoner_name(summoner_name)
+        summoner_details = self.get_summoner_by_name(summoner_name)
+
+        if summoner_details is not None:
+            summoner_id = summoner_details["details"]["accountId"]
+
+        return summoner_id
 
     #%% current game stats
     def get_live_game_info(self, summoner_name: str = None):
@@ -523,7 +589,8 @@ class RiotAPI(LeagueDB):
 
         # update loldb
         if self.dbCachingActive and "status" not in result:
-            self.updateStoredSummonerMatchIds(summoner_name, result)
+            account_id = self.get_summoner_account_id(summoner_name)
+            self.updateStoredSummonerMatchIds(account_id, result)
 
         return result
 
@@ -556,6 +623,7 @@ class RiotAPI(LeagueDB):
         try:
             response = requests.get(url, headers=self.header)
             result = response.json()
+            self.__response_checker(result)
         except Exception as e:
             raise Exception("{} :: failed :: {}".format(endpoint, e))
 
@@ -589,6 +657,7 @@ class RiotAPI(LeagueDB):
 
         if result is None:
             reponse_result = self.__get_match_id_data(endpoint, match_id)
+            self.__response_checker(reponse_result)
 
             if self.dbCachingActive:
                 self.insertData(table, "match_id", match_id, reponse_result)
@@ -626,6 +695,7 @@ class RiotAPI(LeagueDB):
 
         if result is None:
             reponse_result = self.__get_match_id_data(endpoint, match_id)
+            self.__response_checker(reponse_result)
 
             if self.dbCachingActive:
                 self.insertData(table, "match_id", match_id, reponse_result)
@@ -656,8 +726,36 @@ class RiotAPI(LeagueDB):
 
         endpoint = "champ-mast-by-name"
         result = self.__get_summmoner_data(endpoint, summoner_name)
+        self.__response_checker(result)
 
         return result
+
+    #%%
+    def get_list_of_stored_match_ids_for_summoner_name(self, summoner_name: str = None):
+        """Get the list of stored match id's from the db.
+
+        Due to summoners changing their names it is easier and simpler to store
+        match id that are linked to their account id oppose to their summoner name
+
+
+        Parameters
+        ----------
+        summoner_name : str, optional
+            The summoner name in which you want to query.. The default is None.
+
+        Returns
+        -------
+        match_list : TYPE
+            List of matches stored within the database.
+
+        """
+
+        summoner_name = self.__validate_summoner_name(summoner_name)
+        account_id = self.get_summoner_account_id(summoner_name)
+
+        match_list = self.get_list_of_stored_match_ids_for_account_id(account_id)
+
+        return match_list
 
 
 #%%
