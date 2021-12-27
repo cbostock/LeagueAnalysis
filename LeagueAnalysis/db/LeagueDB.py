@@ -39,13 +39,13 @@ class LeagueDB:
         self.db_name = "{}.json".format(dbName)
         self.timeline_db_name = "{}-tl.json".format(dbName)
         self.champlist_db_name = "{}-cl.json".format(dbName)
-        self.matchSummary_db_name = "{}-ms.json".format(dbName)
+        self.match_summary_db_name = "{}-ms.json".format(dbName)
 
         # database object
         self.db = tdb.TinyDB(self.db_name)
         self.db_cl = tdb.TinyDB(self.champlist_db_name)  # champ list
         self.db_tl = tdb.TinyDB(self.timeline_db_name)  # time line
-        self.db_ms = tdb.TinyDB(self.matchSummary_db_name)  # match summary
+        self.db_ms = tdb.TinyDB(self.match_summary_db_name)  # match summary
 
         # User
         self.user = tdb.Query()
@@ -59,44 +59,44 @@ class LeagueDB:
         self.tables["match_summary"] = self.db_ms.table("match_summary")
 
         # consoleprintout
-        self.contsolePrintOut = contsolePrintOut
+        self.contsole_print_out = contsolePrintOut
 
     #%%
-    def __console_get_printout(self, result: str, methodName: str, key: str):
+    def __console_get_printout(self, result: str, method_name: str, key: str):
 
-        if self.contsolePrintOut:
-            if result == None:
+        if self.contsole_print_out:
+            if result is None:
                 print(
                     "{} - {} :: No data found for {}".format(
-                        self.db_name, methodName, key
+                        self.db_name, method_name, key
                     )
                 )
             else:
                 print(
                     "{} - {} :: Data retrieved for {}".format(
-                        self.db_name, methodName, key
+                        self.db_name, method_name, key
                     )
                 )
 
     #%%
-    def __console_insert_printout(self, successful: bool, methodName: str, key: str):
+    def __console_insert_printout(self, successful: bool, method_name: str, key: str):
 
-        if self.contsolePrintOut:
+        if self.contsole_print_out:
             if successful:
                 print(
                     "{} - {} :: data added to the db with the key {}".format(
-                        self.db_name, methodName, key
+                        self.db_name, method_name, key
                     )
                 )
             else:
                 print(
                     "{} - {} :: data not added to the db {}".format(
-                        self.db_name, methodName, key
+                        self.db_name, method_name, key
                     )
                 )
 
     #%%
-    def get_list_of_summoners_stored(self):
+    def get_list_of_stored_summoners(self):
         """Returns the list of summoners stored within the database.
 
 
@@ -107,12 +107,37 @@ class LeagueDB:
 
         """
 
-        listOfSummoners: list = []
+        list_of_summoners: list = []
 
         for item in self.tables["summoner_names"]:
-            listOfSummoners.append(["account_name"])
+            list_of_summoners.append(item["account_name"])
 
-        return listOfSummoners
+        return list_of_summoners
+
+    #%%
+    def get_list_of_stored_match_ids_for_account_id(self, account_id: str):
+        """Return a list of stored match id's for a given account id.
+
+
+        Parameters
+        ----------
+        summoner_name : str
+            Summoner name for the requested list of match id's.
+
+        Returns
+        -------
+        None.
+
+        """
+
+        match_list = self.getStoredData("match_ids", "account_id", account_id)
+
+        if match_list is not None:
+            match_list = match_list["matches"]
+        else:
+            match_list = []
+
+        return match_list
 
     #%% drop timeline table
     def drop_all_tables(self):
@@ -188,13 +213,13 @@ class LeagueDB:
             self.db_ms.drop_tables()
             print(
                 "{} - dropMatchSummaryTable :: match_timeline table dropped".format(
-                    self.matchSummary_db_name
+                    self.match_summary_db_name
                 )
             )
         except Exception as e:
             raise Exception(
                 "{} - dropMatchSummaryTable :: failed :: {}".format(
-                    self.matchSummary_db_name, e
+                    self.match_summary_db_name, e
                 )
             )
 
@@ -257,17 +282,17 @@ class LeagueDB:
             )
 
     #%% get stored data
-    def getStoredData(self, tblName: str, key: str, keyValue: str):
+    def getStoredData(self, tbl_name: str, key: str, key_value: str):
         """Returns data from the given table with the key and value required.
 
 
         Parameters
         ----------
-        tblName : str
+        tbl_name : str
             The corresponding table name.
         key : str
             The key name for the given table. For example, 'match_id'.
-        keyValue : Str
+        key_value : Str
             The the value of the key which is required.  For example, .EUW1_5612017679'.
 
         Returns
@@ -277,19 +302,19 @@ class LeagueDB:
 
         """
 
-        result = self.tables[tblName].get(self.user[key] == keyValue)
-        self.__console_get_printout(result, tblName, keyValue)
+        result = self.tables[tbl_name].get(self.user[key] == key_value)
+        self.__console_get_printout(result, tbl_name, key_value)
 
         return result
 
     #%% add data to store
-    def insertData(self, tblName: str, key: str, keyValue: str, data: dict):
+    def insertData(self, tbl_name: str, key: str, key_value: str, data: dict):
         """Returns data from the given table with the key and value required.
 
 
         Parameters
         ----------
-        tblName : str
+        tbl_name : str
             Table in which the data is being stored.
         key : str
             The key name for the given table. For example, 'match_id'.
@@ -307,34 +332,34 @@ class LeagueDB:
         successful = False
 
         # check to see if we already have that data:
-        result = self.getStoredData(tblName, key, keyValue)
+        result = self.getStoredData(tbl_name, key, key_value)
 
         # if we dont, result == None
         if result is None:
 
             try:
-                value2insert = {key: keyValue, "details": data}
-                self.tables[tblName].insert(value2insert)
+                value2insert = {key: key_value, "details": data}
+                self.tables[tbl_name].insert(value2insert)
 
                 successful = True
 
             except Exception as e:
-                print("{} :: failed :: {}".format(tblName, e))
+                print("{} :: failed :: {}".format(tbl_name, e))
         else:
             successful = True
 
-        self.__console_insert_printout(successful, tblName, keyValue)
+        self.__console_insert_printout(successful, tbl_name, key_value)
 
         return successful
 
     #%% update match list
-    def updateStoredSummonerMatchIds(self, summonerName: str, newMatches: list):
+    def updateStoredSummonerMatchIds(self, account_id: str, newMatches: list):
         """Add new match id's to the existing match id list
 
 
         Parameters
         ----------
-        summonerName : str
+        summoner_name : str
             Summoner name the matches are associated with.
         newMatches : list
             A list of match id's.
@@ -349,29 +374,29 @@ class LeagueDB:
 
         """
 
-        matchList = self.getStoredData("match_ids", "account_name", summonerName)
-        newSummoner = False
+        match_list = self.getStoredData("match_ids", "account_id", account_id)
+        new_summoner = False
 
-        if matchList is not None:
+        if match_list is not None:
 
-            matchList = matchList["matches"]
+            match_list = match_list["matches"]
 
             for match in newMatches:
-                if match not in matchList:
-                    matchList.append(match)
+                if match not in match_list:
+                    match_list.append(match)
 
         else:
-            matchList = newMatches
-            newSummoner = True
+            match_list = newMatches
+            new_summoner = True
 
-        value2update = {"account_name": summonerName, "matches": matchList}
+        value2update = {"account_id": account_id, "matches": match_list}
 
-        if newSummoner:
+        if new_summoner:
             self.tables["match_ids"].insert(value2update)
         else:
             self.tables["match_ids"].update(value2update)
 
-        return matchList
+        return match_list
 
 
 #%%
