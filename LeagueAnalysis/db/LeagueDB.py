@@ -7,17 +7,17 @@ Created on Sat Dec 11 11:55:55 2021
 
 import tinydb as tdb
 
-#%%
+#%% LeagueDB
 class LeagueDB:
     """ LeagueDB is a object which interacts with a NoSQL database TinyDB.
 
 
          Parameters
          ----------
-         dbName : str, optional
+         db_name : str, optional
              The name of the database.  If None is passed default name will be loldb.json with the
              corresponding databases having a prefix.
-         contsolePrintOut : bool, optional
+         contsole_print_out : bool, optional
             Prints out to the console when data is retreieved or written. The default is False.
 
          Returns
@@ -27,19 +27,19 @@ class LeagueDB:
 
     """
 
-    #%%
-    def __init__(self, dbName: str = None, contsolePrintOut: bool = False):
+    #%% __init__
+    def __init__(self, db_name: str = None, contsole_print_out: bool = False):
 
         # database name -- this could include a path
 
-        if dbName is None:
-            dbName = "./db/loldb"
+        if db_name is None:
+            db_name = "./db/loldb"
 
         # database files
-        self.db_name = "{}.json".format(dbName)
-        self.timeline_db_name = "{}-tl.json".format(dbName)
-        self.champlist_db_name = "{}-cl.json".format(dbName)
-        self.match_summary_db_name = "{}-ms.json".format(dbName)
+        self.db_name = "{}.json".format(db_name)
+        self.timeline_db_name = "{}-tl.json".format(db_name)
+        self.champlist_db_name = "{}-cl.json".format(db_name)
+        self.match_summary_db_name = "{}-ms.json".format(db_name)
 
         # database object
         self.db = tdb.TinyDB(self.db_name)
@@ -59,9 +59,9 @@ class LeagueDB:
         self.tables["match_summary"] = self.db_ms.table("match_summary")
 
         # consoleprintout
-        self.contsole_print_out = contsolePrintOut
+        self.contsole_print_out = contsole_print_out
 
-    #%%
+    #%% __console_get_printout
     def __console_get_printout(self, result: str, method_name: str, key: str):
 
         if self.contsole_print_out:
@@ -78,7 +78,7 @@ class LeagueDB:
                     )
                 )
 
-    #%%
+    #%% __console_insert_printout
     def __console_insert_printout(self, successful: bool, method_name: str, key: str):
 
         if self.contsole_print_out:
@@ -95,14 +95,14 @@ class LeagueDB:
                     )
                 )
 
-    #%%
+    #%% get_list_of_stored_summoners
     def get_list_of_stored_summoners(self):
         """Returns the list of summoners stored within the database.
 
 
         Returns
         -------
-        listOfSummoners : List
+        list_of_summoners : List
             The list of summoners stored within the database.
 
         """
@@ -114,15 +114,15 @@ class LeagueDB:
 
         return list_of_summoners
 
-    #%%
+    #%% get_list_of_stored_match_ids_for_account_id
     def get_list_of_stored_match_ids_for_account_id(self, account_id: str):
         """Return a list of stored match id's for a given account id.
 
 
         Parameters
         ----------
-        summoner_name : str
-            Summoner name for the requested list of match id's.
+        account_id : str
+            Account id for the requested list of match id's.
 
         Returns
         -------
@@ -130,7 +130,7 @@ class LeagueDB:
 
         """
 
-        match_list = self.getStoredData("match_ids", "account_id", account_id)
+        match_list = self.get_stored_data("match_ids", "account_id", account_id)
 
         if match_list is not None:
             match_list = match_list["matches"]
@@ -139,7 +139,33 @@ class LeagueDB:
 
         return match_list
 
-    #%% drop timeline table
+    #%% get_stored_data
+    def get_stored_data(self, tbl_name: str, key: str, key_value: str):
+        """Returns data from the given table with the key and value required.
+
+
+        Parameters
+        ----------
+        tbl_name : str
+            The corresponding table name.
+        key : str
+            The key name for the given table. For example, 'match_id'.
+        key_value : Str
+            The the value of the key which is required.  For example, .EUW1_5612017679'.
+
+        Returns
+        -------
+        result : Dict
+             The data associated with the key.
+
+        """
+
+        result = self.tables[tbl_name].get(self.user[key] == key_value)
+        self.__console_get_printout(result, tbl_name, key_value)
+
+        return result
+
+    #%% drop_all_tables
     def drop_all_tables(self):
         """ Drops all tables
 
@@ -161,7 +187,7 @@ class LeagueDB:
         self.drop_summoner_info_table()
         self.drop_timeline_table()
 
-    #%% drop timeline table
+    #%% drop_champ_list_table
     def drop_champ_list_table(self):
         """ Drops all tables from the ***-cl.json.
 
@@ -192,7 +218,7 @@ class LeagueDB:
                 )
             )
 
-    #%% drop timeline table
+    #%% drop_match_summary_table
     def drop_match_summary_table(self):
         """ Drops all tables from the ***-ms.json.
 
@@ -223,7 +249,7 @@ class LeagueDB:
                 )
             )
 
-    #%%
+    #%% drop_summoner_info_table
     def drop_summoner_info_table(self):
         """ Drops all tables from the ***.json.
 
@@ -252,7 +278,7 @@ class LeagueDB:
                 "{} - dropSummaryInfoTable :: failed :: {}".format(self.db_name, e)
             )
 
-    #%% drop timeline table
+    #%% drop_timeline_table
     def drop_timeline_table(self):
         """ Drops all tables from the ***-tl.json.
 
@@ -281,34 +307,8 @@ class LeagueDB:
                 "{} - dropTimelineTable :: failed :: {}".format(self.db_name, e)
             )
 
-    #%% get stored data
-    def getStoredData(self, tbl_name: str, key: str, key_value: str):
-        """Returns data from the given table with the key and value required.
-
-
-        Parameters
-        ----------
-        tbl_name : str
-            The corresponding table name.
-        key : str
-            The key name for the given table. For example, 'match_id'.
-        key_value : Str
-            The the value of the key which is required.  For example, .EUW1_5612017679'.
-
-        Returns
-        -------
-        result : Dict
-             The data associated with the key.
-
-        """
-
-        result = self.tables[tbl_name].get(self.user[key] == key_value)
-        self.__console_get_printout(result, tbl_name, key_value)
-
-        return result
-
-    #%% add data to store
-    def insertData(self, tbl_name: str, key: str, key_value: str, data: dict):
+    #%% insert_data
+    def insert_data(self, tbl_name: str, key: str, key_value: str, data: dict):
         """Returns data from the given table with the key and value required.
 
 
@@ -318,7 +318,7 @@ class LeagueDB:
             Table in which the data is being stored.
         key : str
             The key name for the given table. For example, 'match_id'.
-        keyValue : str
+        key_value : str
             The the value of the key which is being stored.  For example, 'EUW1_5612017679'.
         data : dict
             The data associated with the key.
@@ -332,7 +332,7 @@ class LeagueDB:
         successful = False
 
         # check to see if we already have that data:
-        result = self.getStoredData(tbl_name, key, key_value)
+        result = self.get_stored_data(tbl_name, key, key_value)
 
         # if we dont, result == None
         if result is None:
@@ -352,16 +352,16 @@ class LeagueDB:
 
         return successful
 
-    #%% update match list
-    def updateStoredSummonerMatchIds(self, account_id: str, newMatches: list):
+    #%% update_stored_summoner_match_ids
+    def update_stored_summoner_match_ids(self, account_id: str, new_matches: list):
         """Add new match id's to the existing match id list
 
 
         Parameters
         ----------
-        summoner_name : str
+        account_id : str
             Summoner name the matches are associated with.
-        newMatches : list
+        new_matches : list
             A list of match id's.
             For example ['EUW1_5612017679','EUW1_561201780','EUW1_56120176781'].
 
@@ -374,19 +374,19 @@ class LeagueDB:
 
         """
 
-        match_list = self.getStoredData("match_ids", "account_id", account_id)
+        match_list = self.get_stored_data("match_ids", "account_id", account_id)
         new_summoner = False
 
         if match_list is not None:
 
             match_list = match_list["matches"]
 
-            for match in newMatches:
+            for match in new_matches:
                 if match not in match_list:
                     match_list.append(match)
 
         else:
-            match_list = newMatches
+            match_list = new_matches
             new_summoner = True
 
         value2update = {"account_id": account_id, "matches": match_list}
@@ -399,7 +399,7 @@ class LeagueDB:
         return match_list
 
 
-#%%
+#%% if __name__ == "__main__"
 if __name__ == "__main__":
 
     print("")

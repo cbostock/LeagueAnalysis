@@ -13,63 +13,62 @@ from db.LeagueDB import LeagueDB
 
 
 class RiotAPI(LeagueDB):
+    """A basic class to interact with riots league of legends api endpoints.
 
-    #%% class inistalisation
+    This class inherentes leagueDB to enable localise storage of data to reduce
+    the number of potential API calls.
+
+
+    Parameters
+    ----------
+    apiKey : str
+        Your api key to access riot's api endpoints..
+    ddragon : str, optional
+        The data dragon version to obtain.. The default is "9.3.1".
+    summonerName : str, optional
+        The summoner name for all data retrieval when no other summoner
+        name has been defined. The default is None.
+    region : str, optional
+        Server region of the summoner:
+        'br','eune','euw','jp','kr','la1','la2','na','oc','tr','ru'. The default is "euw".
+    db_saving : bool, optional
+        To enable db caching to reduce api calls for already recieved data.
+        Storing the data within local database allows for future analysis
+        without the use of an active API key.. The default is True.
+    dbName : str, optional
+        The name of the database.  If none is passed a default name
+        of loldb will be used.. The default is None.
+    contsolePrintOut : bool, optional
+        Prints out any interation with the db to the console. The default is False.
+
+
+    Returns
+    -------
+    None.
+
+    """
+
+    #%% __init__
     def __init__(
         self,
-        apiKey: str,
+        api_key: str,
         ddragon: str = "9.3.1",
-        summonerName: str = None,
+        summoner_name: str = None,
         region: str = "euw",
-        dbCaching: bool = True,
-        dbName: str = None,
-        contsolePrintOut: bool = False,
+        db_saving: bool = True,
+        db_name: str = None,
+        contsole_print_out: bool = False,
     ):
 
-        """A basic class to interact with riots league of legends api endpoints.
-
-        This class inherentes leagueDB to enable localise storage of data to reduce
-        the number of potential API calls.
-
-
-        Parameters
-        ----------
-        apiKey : str
-            Your api key to access riot's api endpoints..
-        ddragon : str, optional
-            The data dragon version to obtain.. The default is "9.3.1".
-        summonerName : str, optional
-            The summoner name for all data retrieval when no other summoner
-            name has been defined. The default is None.
-        region : str, optional
-            Server region of the summoner:
-            'br','eune','euw','jp','kr','la1','la2','na','oc','tr','ru'. The default is "euw".
-        dbCaching : bool, optional
-            To enable db caching to reduce api calls for already recieved data.
-            Storing the data within local database allows for future analysis
-            without the use of an active API key.. The default is True.
-        dbName : str, optional
-            The name of the database.  If none is passed a default name
-            of loldb will be used.. The default is None.
-        contsolePrintOut : bool, optional
-            Prints out any interation with the db to the console. The default is False.
-
-
-        Returns
-        -------
-        None.
-
-        """
-
         # cachine database
-        if dbCaching:
-            super().__init__(dbName=dbName, contsolePrintOut=contsolePrintOut)
-            self.dbCachingActive = True
+        if db_saving:
+            super().__init__(db_name=db_name, contsole_print_out=contsole_print_out)
+            self.db_savingActive = True
         else:
-            self.dbCachingActive = False
+            self.db_savingActive = False
 
-        if summonerName is not None:
-            self.summoner_name = summonerName
+        if summoner_name is not None:
+            self.summoner_name = summoner_name
 
         # region
         self.region: str = region
@@ -78,7 +77,7 @@ class RiotAPI(LeagueDB):
         self.__setup_api_details()
 
         # headers
-        self.header: dict = {"X-Riot-Token": apiKey}
+        self.header: dict = {"X-Riot-Token": api_key}
 
         # endpoints
         self.api_endpoints: dict = {}
@@ -94,7 +93,7 @@ class RiotAPI(LeagueDB):
         # get champ list
         self.get_champ_details()
 
-    #%% validate summoner name
+    #%% __validate_summoner_name
     def __validate_summoner_name(self, summoner_name: str):
         """ Method to establish which summoner name to use.
 
@@ -123,7 +122,7 @@ class RiotAPI(LeagueDB):
 
         return summoner_name
 
-    #%% storing or using an additional name
+    #%% __initalise_cache
     def __initalise_cache(self, summoner_name: str):
         """Initalise a key within the response property for the given summoner name
 
@@ -143,7 +142,7 @@ class RiotAPI(LeagueDB):
         if summoner_name not in self.response:
             self.response[summoner_name] = {}
 
-    #%% api details (euw atm)
+    #%% __setup_api_details
     def __setup_api_details(self):
         """Intalises all regional specific api urls for the given region
 
@@ -199,7 +198,7 @@ class RiotAPI(LeagueDB):
         elif region in ["jp", "kr", "oc"]:
             self.api_details["regionalRouting"] = "https://asia.api.riotgames.com"
 
-    #%% endpoint locations
+    #%% __setup_endpoints
     def __setup_endpoints(self):
         """ Loads end points into memory.
 
@@ -242,7 +241,7 @@ class RiotAPI(LeagueDB):
             "url"
         ]: str = "/lol/match/v5/matches/{}/timeline"
 
-    #%% make endpoint url
+    #%% __make_url
     def __make_url(
         self, endpoint_key: str, summoner_name: str, regional_routing: bool = False
     ):
@@ -266,7 +265,7 @@ class RiotAPI(LeagueDB):
         """
 
         # check to make sure we have summoner details
-        summoner_datails = self.getStoredData(
+        summoner_datails = self.get_stored_data(
             "summoner_names", "account_name", summoner_name
         )
 
@@ -297,7 +296,7 @@ class RiotAPI(LeagueDB):
 
         return url
 
-    #%% make match url
+    #%% __make_match_url
     def __make_match_url(self, endpoint_key: str, match_id: str):
         """Generates a url for a given match id.
 
@@ -323,14 +322,15 @@ class RiotAPI(LeagueDB):
 
         return url
 
-    #%% response checker
-    def __response_checker(self, response):
+    #%% __response_checker
+    @staticmethod
+    def __response_checker(response):
         """Check the vadility of the response
 
 
         Parameters
         ----------
-        response : TYPE
+        response : dict
             response from the api call.
 
         Raises
@@ -351,74 +351,7 @@ class RiotAPI(LeagueDB):
                 )
             )
 
-    #%% get the champion list from data dragon
-    def get_champ_details(self):
-        """Retreives the data dragon data via riot's api.
-
-        The information is also cached within a dictionary as an object
-        property: self.champion_list.  A DataFrame object is also created within
-        this property (self.champion_list['df']) for later use.
-
-
-        Raises
-        ------
-        Exception
-            API Failure.
-
-        Returns
-        -------
-        pd.DataFrame
-            The resulting data dragon data within a DataFrame
-
-        """
-
-        champ_list = None
-
-        if self.dbCachingActive:
-            champ_list = self.getStoredData(
-                "champ_list", "ddragon", self.ddragon_version
-            )
-
-        # if we have stored data:
-        if champ_list is not None:
-            self.champion_list["df"] = pd.DataFrame.from_dict(
-                champ_list["details"], orient="index"
-            )
-
-        # if we don't go and get it
-        else:
-            url: str = "https://ddragon.leagueoflegends.com/cdn/{}/data/en_GB/champion.json".format(
-                self.ddragon_version
-            )
-
-            # check to see if the champ list dict is empty
-            if len(self.champion_list) == 0:
-                try:
-                    response = requests.get(url)
-                    self.champion_list = response.json()
-                    self.__response_checker(self.champion_list)
-                except Exception as e:
-                    raise Exception("get_champ_details :: failed :: {}".format(e))
-
-            if self.champion_list is not None:
-                self.champion_list["df"] = pd.DataFrame.from_dict(
-                    self.champion_list["data"], orient="index"
-                )
-            else:
-                self.champion_list["df"] = None
-
-            # update lolbd
-            if self.dbCachingActive:
-                self.insertData(
-                    "champ_list",
-                    "ddragon",
-                    self.ddragon_version,
-                    self.champion_list["data"],
-                )
-
-        return self.champion_list["df"]
-
-    #%%
+    #%% __get_summmoner_data
     def __get_summmoner_data(
         self, endpoint: str, summoner_name: str, regional_routing: bool = False
     ):
@@ -463,7 +396,108 @@ class RiotAPI(LeagueDB):
 
         return result
 
-    #%% get summoner details
+    #%% __get_match_id_data
+    def __get_match_id_data(self, endpoint: str, match_id: str):
+        """Get Match id information
+
+
+        Parameters
+        ----------
+        endpoint : str
+            Endpoint key which the method is targeting.
+        match_id : str
+            Descired match id
+
+        Raises
+        ------
+        Exception
+            API Failure.
+
+        Returns
+        -------
+        result : dict
+            The response within in a dictionary.
+
+        """
+
+        url: str = self.__make_match_url(endpoint, match_id)
+
+        try:
+            response = requests.get(url, headers=self.header)
+            result = response.json()
+            self.__response_checker(result)
+        except Exception as e:
+            raise Exception("{} :: failed :: {}".format(endpoint, e))
+
+        return result
+
+    #%% get_champ_details
+    def get_champ_details(self):
+        """Retreives the data dragon data via riot's api.
+
+        The information is also cached within a dictionary as an object
+        property: self.champion_list.  A DataFrame object is also created within
+        this property (self.champion_list['df']) for later use.
+
+
+        Raises
+        ------
+        Exception
+            API Failure.
+
+        Returns
+        -------
+        pd.DataFrame
+            Champion.json from data dragon formatted to be a pd.DataFrame.
+
+        """
+        champ_list = None
+
+        if self.db_savingActive:
+            champ_list = self.get_stored_data(
+                "champ_list", "ddragon", self.ddragon_version
+            )
+
+        # if we have stored data:
+        if champ_list is not None:
+            self.champion_list["df"] = pd.DataFrame.from_dict(
+                champ_list["details"], orient="index"
+            )
+
+        # if we don't go and get it
+        else:
+            url: str = "https://ddragon.leagueoflegends.com/cdn/{}/data/en_GB/champion.json".format(
+                self.ddragon_version
+            )
+
+            # check to see if the champ list dict is empty
+            if len(self.champion_list) == 0:
+                try:
+                    response = requests.get(url)
+                    self.champion_list = response.json()
+                    self.__response_checker(self.champion_list)
+                except Exception as e:
+                    raise Exception("get_champ_details :: failed :: {}".format(e))
+
+            if self.champion_list is not None:
+                self.champion_list["df"] = pd.DataFrame.from_dict(
+                    self.champion_list["data"], orient="index"
+                )
+            else:
+                self.champion_list["df"] = None
+
+            # update lolbd
+            if self.db_savingActive:
+                self.insert_data(
+                    "champ_list",
+                    "ddragon",
+                    self.ddragon_version,
+                    self.champion_list["data"],
+                )
+
+        return self.champion_list["df"]
+
+    #%% get_summoner_by_name
     def get_summoner_by_name(self, summoner_name: str = None):
         """Retreieves Summoner information using the summoner name.
 
@@ -491,8 +525,8 @@ class RiotAPI(LeagueDB):
         table_key = "account_name"
         endpoint = "summoner-by-name"
 
-        if self.dbCachingActive:
-            result = self.getStoredData(table, table_key, summoner_name)
+        if self.db_savingActive:
+            result = self.get_stored_data(table, table_key, summoner_name)
         else:
             result = None
 
@@ -502,12 +536,12 @@ class RiotAPI(LeagueDB):
             result = {}
             result["details"] = result_returned
 
-            if self.dbCachingActive and "status" not in result:
-                self.insertData(table, table_key, summoner_name, result_returned)
+            if self.db_savingActive and "status" not in result:
+                self.insert_data(table, table_key, summoner_name, result_returned)
 
         return result
 
-    #%%
+    #%% get_summoner_account_id
     def get_summoner_account_id(self, summoner_name: str = None):
         """Returns the account id for a summoner name.
 
@@ -532,7 +566,7 @@ class RiotAPI(LeagueDB):
 
         return summoner_id
 
-    #%% current game stats
+    #%% get_live_game_info
     def get_live_game_info(self, summoner_name: str = None):
         """Obtains the current live game's data.
 
@@ -562,7 +596,7 @@ class RiotAPI(LeagueDB):
 
         return result
 
-    #%% match history
+    #%% get_list_of_matches
     def get_list_of_matches(self, summoner_name: str = None):
         """Retrieves the last 20 match id's for a given summoner name.
 
@@ -588,48 +622,13 @@ class RiotAPI(LeagueDB):
         )
 
         # update loldb
-        if self.dbCachingActive and "status" not in result:
+        if self.db_savingActive and "status" not in result:
             account_id = self.get_summoner_account_id(summoner_name)
-            self.updateStoredSummonerMatchIds(account_id, result)
+            self.update_stored_summoner_match_ids(account_id, result)
 
         return result
 
-    #%%
-    def __get_match_id_data(self, endpoint: str, match_id: str):
-        """Get Match id information
-
-
-        Parameters
-        ----------
-        endpoint : str
-            Endpoint key which the method is targeting.
-        match_id : str
-            Descired match id
-
-        Raises
-        ------
-        Exception
-            API Failure.
-
-        Returns
-        -------
-        result : TYPE
-            The response within in a dictionary.
-
-        """
-
-        url: str = self.__make_match_url(endpoint, match_id)
-
-        try:
-            response = requests.get(url, headers=self.header)
-            result = response.json()
-            self.__response_checker(result)
-        except Exception as e:
-            raise Exception("{} :: failed :: {}".format(endpoint, e))
-
-        return result
-
-    #%% get match details
+    #%% get_match_summary
     def get_match_summary(self, match_id: str):
         """Retrieves the match summary for a  given match id.
 
@@ -653,21 +652,21 @@ class RiotAPI(LeagueDB):
         table: str = "match_summary"
         endpoint: str = "match_summary"
 
-        result = self.getStoredData(table, "match_id", match_id)
+        result = self.get_stored_data(table, "match_id", match_id)
 
         if result is None:
             reponse_result = self.__get_match_id_data(endpoint, match_id)
             self.__response_checker(reponse_result)
 
-            if self.dbCachingActive:
-                self.insertData(table, "match_id", match_id, reponse_result)
+            if self.db_savingActive:
+                self.insert_data(table, "match_id", match_id, reponse_result)
 
             result: dict = {}
             result["details"] = reponse_result
 
         return result
 
-    #%% get match timeline details
+    #%% get_match_timeline
     def get_match_timeline(self, match_id: str):
         """Retieve match timeline data for a givem match id.
 
@@ -691,21 +690,21 @@ class RiotAPI(LeagueDB):
         table: str = "match_timeline"
         endpoint: str = "match_timeline"
 
-        result = self.getStoredData(table, "match_id", match_id)
+        result = self.get_stored_data(table, "match_id", match_id)
 
         if result is None:
             reponse_result = self.__get_match_id_data(endpoint, match_id)
             self.__response_checker(reponse_result)
 
-            if self.dbCachingActive:
-                self.insertData(table, "match_id", match_id, reponse_result)
+            if self.db_savingActive:
+                self.insert_data(table, "match_id", match_id, reponse_result)
 
             result: dict = {}
             result["details"] = reponse_result
 
         return result
 
-    #%% get summoner champ masteries
+    #%% get_champion_mastery_by_summoner
     def get_champion_mastery_by_summoner(self, summoner_name: str = None):
         """Retieves a list champions with the summoners champion mastery.
 
@@ -730,7 +729,7 @@ class RiotAPI(LeagueDB):
 
         return result
 
-    #%%
+    #%% get_list_of_stored_match_ids_for_summoner_name
     def get_list_of_stored_match_ids_for_summoner_name(self, summoner_name: str = None):
         """Get the list of stored match id's from the db.
 
@@ -745,7 +744,7 @@ class RiotAPI(LeagueDB):
 
         Returns
         -------
-        match_list : TYPE
+        match_list : list
             List of matches stored within the database.
 
         """
@@ -758,7 +757,6 @@ class RiotAPI(LeagueDB):
         return match_list
 
 
-#%%
-
+#%% if __name__ == "__main__"
 if __name__ == "__main__":
     print("main")
